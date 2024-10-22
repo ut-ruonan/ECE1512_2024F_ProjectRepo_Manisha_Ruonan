@@ -2,6 +2,7 @@
 import nbformat
 from IPython.core.interactiveshell import InteractiveShell
 
+
 def load_ipynb_as_module(notebook_path):
     """Load and execute a Jupyter Notebook as a module."""
     with open(notebook_path, 'r', encoding='utf-8') as f:
@@ -11,6 +12,7 @@ def load_ipynb_as_module(notebook_path):
     for cell in notebook.cells:
         if cell.cell_type == 'code':
             exec(cell.source, globals())  # Execute the notebook's code in the global namespace
+
 
 # Load the notebook
 load_ipynb_as_module('utils.ipynb')
@@ -29,7 +31,8 @@ num_classes = 2
 num_images_per_class = 50
 img_size = (3, 224, 224)
 
-img_syn = torch.rand(num_classes * num_images_per_class, *img_size, requires_grad=True)
+img_syn = torch.normal(mean=0.0, std=0.1, size=(num_classes * num_images_per_class, *img_size), requires_grad=True)
+
 #step 2: optimizer
 optimizer_img = optim.SGD([img_syn], lr=0.1) # lr is eta_s
 # step 3: set up model - ConvNET - 7 in this case
@@ -104,6 +107,7 @@ def get_attention(feature_set, param=0, exp=4, norm='l2'):
 
     return normalized_attention_maps
 
+
 # step 7: error function
 def error(real, syn, err_type="MSE"):
     if err_type == "MSE":
@@ -117,78 +121,87 @@ def error(real, syn, err_type="MSE"):
         raise ValueError("Invalid error type")
     return err
 
+
 # step 8: training loop
-num_iterations = 200
-learning_rate_model = 0.01
+def train_dataset(activations={}):
+    num_iterations = 200
+    learning_rate_model = 0.01
 
-losses = []
-for iteration in range(num_iterations):
-    print(f"Iteration {iteration + 1}/{num_iterations}")
+    losses = []
+    for iteration in range(num_iterations):
+        print(f"Iteration {iteration + 1}/{num_iterations}")
 
-    images_syn_all = []
-    images_real_all = []
-    for c in range(num_classes):
-        img_real, _ = next(iter(real_loader))
-        img_syn_per_class = img_syn[c * num_images_per_class:(c + 1) * num_images_per_class]
+        images_syn_all = []
+        images_real_all = []
+        for c in range(num_classes):
+            img_real, _ = next(iter(real_loader))
+            img_syn_per_class = img_syn[c * num_images_per_class:(c + 1) * num_images_per_class]
 
-        images_real_all.append(img_real)
-        images_syn_all.append(img_syn_per_class)
+            images_real_all.append(img_real)
+            images_syn_all.append(img_syn_per_class)
 
-    images_real_all = torch.cat(images_real_all, dim=0)
-    images_syn_all = torch.cat(images_syn_all, dim=0)
+        images_real_all = torch.cat(images_real_all, dim=0)
+        images_syn_all = torch.cat(images_syn_all, dim=0)
 
-    net.train()
-    hooks = attach_hooks(net)
-    output_real = net(images_real_all)[0]
-    activations, original_model_set_activations = refresh_activations(activations)
+        net.train()
+        hooks = attach_hooks(net)
+        output_real = net(images_real_all)[0]
+        activations, original_model_set_activations = refresh_activations(activations)
 
-    output_syn = net(images_syn_all)[0]
-    activations, syn_model_set_activations = refresh_activations(activations)
-    delete_hooks(hooks)
+        output_syn = net(images_syn_all)[0]
+        activations, syn_model_set_activations = refresh_activations(activations)
+        delete_hooks(hooks)
 
-    length_of_network = len(original_model_set_activations)
+        length_of_network = len(original_model_set_activations)
 
-    loss = torch.tensor(0.0)
-    mid_loss = 0
-    out_loss = 0
-    loss_avg = 0
-    for layer in range(length_of_network - 1):
-        real_attention = get_attention(original_model_set_activations[layer], param=1, exp=1, norm='l2')
-        syn_attention = get_attention(syn_model_set_activations[layer], param=1, exp=1, norm='l2')
+        loss = torch.tensor(0.0)
+        mid_loss = 0
+        out_loss = 0
+        loss_avg = 0
 
-        tl = 100 * error(real_attention, syn_attention, err_type="MSE_B")
-        loss += tl
-        mid_loss += tl
+        for layer in range(length_of_network - 1):
+            real_attention = get_attention(original_model_set_activations[layer], param=1, exp=1, norm='l2')
+            syn_attention = get_attention(syn_model_set_activations[layer], param=1, exp=1, norm='l2')
 
-    output_loss = 100 * 0.01 * error(output_real, output_syn, err_type="MSE_B")
-    loss += output_loss
-    out_loss += output_loss
+            tl = 100 * error(real_attention, syn_attention, err_type="MSE_B")
+            loss += tl
+            mid_loss += tl.item()
 
-    optimizer_img.zero_grad()
-    loss.backward()
-    optimizer_img.step()
-    loss_avg += loss.item()
-    torch.cuda.empty_cache()
+        output_loss = 100 * 0.01 * error(output_real, output_syn, err_type="MSE_B")
+        loss += output_loss
+        out_loss += output_loss.item()
 
-    loss_avg /= (num_classes)
-    out_loss /= (num_classes)
-    mid_loss /= (num_classes)
-    losses.append((loss_avg, out_loss.item(), mid_loss.item()))
-    if iteration % 10 == 0:
-        print('%s iter = %05d, loss = %.4f' % (get_time(), iteration, loss_avg))
+        optimizer_img.zero_grad()
+        loss.backward()
+        optimizer_img.step()
+        loss_avg += loss.item()
+        torch.cuda.empty_cache()
 
-print("training completed.")
+        loss_avg /= (num_classes)
+        out_loss /= (num_classes)
+        mid_loss /= (num_classes)
+        losses.append((loss_avg, out_loss, mid_loss))
+        if iteration % 10 == 0:
+            print('%s iter = %05d, loss = %.4f' % (get_time(), iteration, loss_avg))
+
+    print("training completed.")
+    return img_syn, losses
 
 
-save_path = "models/synthetic_dataset.pt"
+def save_results(img_syn, losses, noise_type):
+    save_path = f"mhist_result/{noise_type}_synthetic_dataset.pt"
 
-torch.save(img_syn, save_path)
+    torch.save(img_syn, save_path)
 
-print(f"Synthetic dataset saved to {save_path}")
+    print(f"Synthetic dataset saved to {save_path}")
 
-loss_log_path = "models/training_losses.txt"
-with open(loss_log_path, "w") as f:
-    for epoch, loss in enumerate(losses):
-        f.write(f"Iteration {epoch}: Loss = {loss}\n")
+    loss_log_path = f"mhist_result/{noise_type}_training_losses.txt"
+    with open(loss_log_path, "w") as f:
+        for epoch, loss in enumerate(losses):
+            f.write(f"Iteration {epoch}: Loss = {loss}\n")
 
-print(f"Training losses saved to {loss_log_path}")
+    print(f"Training losses saved to {loss_log_path}")
+
+
+img_syn, losses = train_dataset()
+save_results(img_syn, losses, 'Gaussian')
