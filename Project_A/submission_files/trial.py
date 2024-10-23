@@ -26,6 +26,9 @@ from torch.optim import SGD
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
 # 2b
 # set up the synthetic dataset
 num_classes = 2
@@ -40,7 +43,6 @@ transform = transforms.Compose([
 real_dataset = datasets.ImageFolder(root='mhist_dataset/train', transform=transform)
 real_loader = torch.utils.data.DataLoader(real_dataset, batch_size=128, shuffle=True)
 
-
 def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_class=50, noise_std=0.8):
     synthetic_images = []
     synthetic_labels = []
@@ -53,8 +55,8 @@ def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_
         )
 
         for i in indices:
-            img_real = real_dataset[i][0]
-            noise = torch.normal(mean=0, std=noise_std, size=img_real.shape)
+            img_real = real_dataset[i][0].to(device)
+            noise = torch.rand(size=img_real.shape, device=device)
 
             noise = noise.to(img_real.device)
 
@@ -65,12 +67,10 @@ def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_
             synthetic_images.append(synthetic_image)
             synthetic_labels.append(real_dataset[i][1])
 
-    # Stack images to return a tensor for training
     img_syn = torch.stack(synthetic_images)
-    labels_syn = torch.tensor(synthetic_labels)
+    labels_syn = torch.tensor(synthetic_labels, device=device)
 
     return img_syn, labels_syn
-
 
 img_syn, _ = generate_synthetic_dataset_with_noise(real_dataset, num_classes)
 # step 2: optimizer
@@ -81,7 +81,8 @@ optimizer_img = optim.SGD([img_syn], lr=0.1)  # lr is eta_s
 
 model_path = 'models/mhist_original.pth'
 net = get_network(model='ConvNetD7', channel=3, num_classes=2, im_size=(224, 224))
-net.load_state_dict(torch.load(model_path))
+net.load_state_dict(torch.load(model_path, map_location=device))
+net.to(device)
 net.train()
 
 for param in list(net.parameters()):
@@ -171,7 +172,8 @@ def train_dataset(img_syn, activations={}):
         images_real_all = []
         for c in range(num_classes):
             img_real, _ = next(iter(real_loader))
-            img_syn_per_class = img_syn[c * num_images_per_class:(c + 1) * num_images_per_class]
+            img_real = img_real.to(device)
+            img_syn_per_class = img_syn[c * num_images_per_class:(c + 1) * num_images_per_class].to(device)
 
             images_real_all.append(img_real)
             images_syn_all.append(img_syn_per_class)
@@ -241,4 +243,4 @@ def save_results(img_syn, losses, noise_type):
 
 
 img_syn, losses = train_dataset(img_syn)
-save_results(img_syn, losses, 'Gaussian')
+save_results(img_syn, losses, 'Random')
