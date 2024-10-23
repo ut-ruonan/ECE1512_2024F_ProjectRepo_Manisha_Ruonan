@@ -17,6 +17,7 @@ def load_ipynb_as_module(notebook_path):
 # Load the notebook
 load_ipynb_as_module('utils.ipynb')
 
+import random
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,26 +32,61 @@ num_classes = 2
 num_images_per_class = 50
 img_size = (3, 224, 224)
 
-img_syn = torch.normal(mean=0.0, std=0.1, size=(num_classes * num_images_per_class, *img_size), requires_grad=True)
-
-#step 2: optimizer
-optimizer_img = optim.SGD([img_syn], lr=0.1) # lr is eta_s
-# step 3: set up model - ConvNET - 7 in this case
-# freeze the model's weights so that only the synthetic dataset is updated
-
-net = get_network(model='ConvNetD7', channel=3, num_classes=2, im_size=(224, 224))
-net.train()
-
-for param in list(net.parameters()):
-    param.requires_grad = False
-
 # step 4: real dataset loader
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
 real_dataset = datasets.ImageFolder(root='mhist_dataset/train', transform=transform)
-real_loader = torch.utils.data.DataLoader(real_dataset, batch_size=num_images_per_class, shuffle=True)
+real_loader = torch.utils.data.DataLoader(real_dataset, batch_size=128, shuffle=True)
+
+
+def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_class=50, noise_std=0.8):
+    synthetic_images = []
+    synthetic_labels = []
+
+    for class_id in range(num_classes):
+        # Randomly sample 50 images from each class
+        indices = random.sample(
+            [i for i, (_, label) in enumerate(real_dataset) if label == class_id],
+            images_per_class
+        )
+
+        for i in indices:
+            img_real = real_dataset[i][0]
+            noise = torch.normal(mean=0, std=noise_std, size=img_real.shape)
+
+            noise = noise.to(img_real.device)
+
+            synthetic_image = img_real + noise
+
+            synthetic_image = torch.clamp(synthetic_image, 0, 1)
+
+            synthetic_images.append(synthetic_image)
+            synthetic_labels.append(real_dataset[i][1])
+
+    # Stack images to return a tensor for training
+    img_syn = torch.stack(synthetic_images)
+    labels_syn = torch.tensor(synthetic_labels)
+
+    return img_syn, labels_syn
+
+
+img_syn, _ = generate_synthetic_dataset_with_noise(real_dataset, num_classes)
+# step 2: optimizer
+img_syn = torch.nn.Parameter(img_syn)
+optimizer_img = optim.SGD([img_syn], lr=0.1)  # lr is eta_s
+# step 3: set up model - ConvNET - 7 in this case
+# freeze the model's weights so that only the synthetic dataset is updated
+
+model_path = 'models/mhist_original.pth'
+net = get_network(model='ConvNetD7', channel=3, num_classes=2, im_size=(224, 224))
+net.load_state_dict(torch.load(model_path))
+net.train()
+
+for param in list(net.parameters()):
+    param.requires_grad = False
+
 
 # step 5: hook
 # Using hook to extract the activations from the layers (attention maps) to compare the attention maps from real to synthetic
@@ -123,7 +159,7 @@ def error(real, syn, err_type="MSE"):
 
 
 # step 8: training loop
-def train_dataset(activations={}):
+def train_dataset(img_syn, activations={}):
     num_iterations = 200
     learning_rate_model = 0.01
 
@@ -145,6 +181,7 @@ def train_dataset(activations={}):
 
         net.train()
         hooks = attach_hooks(net)
+
         output_real = net(images_real_all)[0]
         activations, original_model_set_activations = refresh_activations(activations)
 
@@ -203,5 +240,5 @@ def save_results(img_syn, losses, noise_type):
     print(f"Training losses saved to {loss_log_path}")
 
 
-img_syn, losses = train_dataset()
+img_syn, losses = train_dataset(img_syn)
 save_results(img_syn, losses, 'Gaussian')
