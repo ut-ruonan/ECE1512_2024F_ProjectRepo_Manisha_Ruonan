@@ -72,7 +72,7 @@ def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_
 
     return img_syn, labels_syn
 
-img_syn, _ = generate_synthetic_dataset_with_noise(real_dataset, num_classes)
+img_syn, labels_syn = generate_synthetic_dataset_with_noise(real_dataset, num_classes)
 # step 2: optimizer
 img_syn = torch.nn.Parameter(img_syn)
 optimizer_img = optim.SGD([img_syn], lr=0.1)  # lr is eta_s
@@ -160,26 +160,35 @@ def error(real, syn, err_type="MSE"):
 
 
 # step 8: training loop
-def train_dataset(img_syn, activations={}):
-    num_iterations = 200
+def train_dataset(img_syn, labels_syn, activations={}):
+    num_iterations = 2
     learning_rate_model = 0.01
+
 
     losses = []
     for iteration in range(num_iterations):
         print(f"Iteration {iteration + 1}/{num_iterations}")
 
         images_syn_all = []
+        labels_syn_all = []
         images_real_all = []
+        labels_real_all = []
+
         for c in range(num_classes):
-            img_real, _ = next(iter(real_loader))
+            img_real, label_real = next(iter(real_loader))
             img_real = img_real.to(device)
             img_syn_per_class = img_syn[c * num_images_per_class:(c + 1) * num_images_per_class].to(device)
+            label_syn_per_class = labels_syn[c * num_images_per_class:(c + 1) * num_images_per_class]
 
             images_real_all.append(img_real)
+            labels_real_all.append(label_real)
             images_syn_all.append(img_syn_per_class)
+            labels_syn_all.append(label_syn_per_class)
 
         images_real_all = torch.cat(images_real_all, dim=0)
+        labels_real_all = torch.cat(labels_real_all, dim=0)
         images_syn_all = torch.cat(images_syn_all, dim=0)
+        labels_syn_all = torch.cat(labels_syn_all, dim=0)
 
         net.train()
         hooks = attach_hooks(net)
@@ -224,13 +233,13 @@ def train_dataset(img_syn, activations={}):
             print('%s iter = %05d, loss = %.4f' % (get_time(), iteration, loss_avg))
 
     print("training completed.")
-    return img_syn, losses
+    return img_syn, labels_syn, losses
 
 
-def save_results(img_syn, losses, noise_type):
+def save_results(img_syn, labels_syn, losses, noise_type):
     save_path = f"mhist_result/{noise_type}_synthetic_dataset.pt"
 
-    torch.save(img_syn, save_path)
+    torch.save({'images': img_syn, 'labels': labels_syn}, save_path)
 
     print(f"Synthetic dataset saved to {save_path}")
 
@@ -242,5 +251,5 @@ def save_results(img_syn, losses, noise_type):
     print(f"Training losses saved to {loss_log_path}")
 
 
-img_syn, losses = train_dataset(img_syn)
-save_results(img_syn, losses, 'Random')
+img_syn, labels_syn, losses = train_dataset(img_syn, labels_syn)
+save_results(img_syn, labels_syn, losses, 'Random')
