@@ -26,7 +26,7 @@ from torch.optim import SGD
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # 2b
@@ -56,7 +56,8 @@ def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_
 
         for i in indices:
             img_real = real_dataset[i][0].to(device)
-            noise = torch.rand(size=img_real.shape, requires_grad=True, device=device)
+            noise = torch.normal(mean=0, std=noise_std, size=img_real.shape, requires_grad=True)
+            # noise = torch.rand(size=img_real.shape, device=device)
 
             noise = noise.to(img_real.device)
 
@@ -252,4 +253,4 @@ def save_results(img_syn, labels_syn, losses, noise_type):
 
 
 img_syn, labels_syn, losses = train_dataset(img_syn, labels_syn)
-save_results(img_syn, labels_syn, losses, 'Random')
+save_results(img_syn, labels_syn, losses, 'Gaussian')
