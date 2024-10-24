@@ -56,7 +56,7 @@ def generate_synthetic_dataset_with_noise(real_dataset, num_classes, images_per_
 
         for i in indices:
             img_real = real_dataset[i][0].to(device)
-            noise = torch.rand(size=img_real.shape, device=device)
+            noise = torch.rand(size=img_real.shape, requires_grad=True, device=device)
 
             noise = noise.to(img_real.device)
 
@@ -161,7 +161,7 @@ def error(real, syn, err_type="MSE"):
 
 # step 8: training loop
 def train_dataset(img_syn, labels_syn, activations={}):
-    num_iterations = 2
+    num_iterations = 200
     learning_rate_model = 0.01
 
 
