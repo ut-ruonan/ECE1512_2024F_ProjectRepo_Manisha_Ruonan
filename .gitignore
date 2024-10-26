@@ -1,2 +1,4 @@
 /venv/
 Project_A/submission_files/mhist_dataset/images.zip
+*.pt
+*.txt
