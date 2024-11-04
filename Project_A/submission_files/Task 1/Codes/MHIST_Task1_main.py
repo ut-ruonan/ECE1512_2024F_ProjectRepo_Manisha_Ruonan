@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # This is the code for the 'Task 1: Dataset Distillation with Attention Matching' Question 2. Dataset Distillation Learning - MHIST Dataset
+"""
+Header for MHIST_Task1_main.py
+--------------------
+This is the code for the "Task 1: Dataset Distillation with Attention Matching' Question 2. Dataset Distillation Learning - MHIST Dataset"
 
-#     ########################################### Code start here for MHIST Dataset ############################################
-
-# # Import Required Libraries
+    ########################################### Code start here for MHIST Dataset ############################################
+"""
+# #Import Required Libraries
 
 # In[ ]:
 
@@ -167,10 +170,10 @@ mhist_test = MHISTDataset(annotations, data_path, partition='test', transform=tr
 mhist_loader = DataLoader(mhist_train, batch_size=64, shuffle=True)
 mhist_test_loader = DataLoader(mhist_test, batch_size=64, shuffle=False)
 
-
+"""
 # # Part 1 Question 2(a):
-# Train the selected model with the original dataset and report the classification accuracy along  with floating-point operations per second (FLOPs) for the test set. Use SGD as an optimizer
-# with a cosine annealing scheduler with an initial learning rate of 0.01 for 20 epochs. (For more information on experimental setting, look at the implementation details of [51]) These scores give you the upper bound benchmark evaluation.
+Train the selected model with the original dataset and report the classification accuracy along  with floating-point operations per second (FLOPs) for the test set. Use SGD as an optimizer with a cosine annealing scheduler with an initial learning rate of 0.01 for 20 epochs. (For more information on experimental setting, look at the implementation details of [51]) These scores give you the upper bound benchmark evaluation.
+"""
 
 # In[ ]:
 
@@ -250,9 +253,10 @@ input_tensor_mhist = torch.randn(len(mhist_train), channel_mhist, 224, 224)
 flops_mhist = calculate_flops(convnet7, input_tensor_mhist)
 print(f'FLOPs for ConvNet7: {flops_mhist:.2f} FLOPs')
 
-
-# # Part 1: Question 2(b): 
-# Learn the synthetic dataset S using the selected model and Attention Matching algorithm. For initialization of condensed images, randomly select from real training images. The experimental setup can be found in Table 1.
+"""
+Part 1: Question 2(b): 
+Learn the synthetic dataset S using the selected model and Attention Matching algorithm. For initialization of condensed images, randomly select from real training images. The experimental setup can be found in Table 1.
+"""
 
 # In[ ]:
 
@@ -376,9 +380,9 @@ print("Training on MHIST dataset...")
 train_with_attention_matching(convnet7, synthetic_loader_mhist, optimizer_mhist, F.cross_entropy, 
                               param=0, exp=4, num_epochs=T_mhist, lambda_param=lambda_mhist)
 
-# Evaluate ConvNet7 on the test set
-accuracy_attention_mhist = evaluate_model(convnet7, mhist_test_loader)
-print(f'ConvNet7 Test Accuracy on MHIST: {accuracy_attention_mhist:.2f}%')
+# # Evaluate ConvNet7 on the test set
+# accuracy_attention_mhist = evaluate_model(convnet7, mhist_test_loader)
+# print(f'ConvNet7 Test Accuracy on MHIST: {accuracy_attention_mhist:.2f}%')
 
 
 # # Part 1: Question 2(c):
@@ -410,10 +414,10 @@ save_folder = 'Save_images'
 visualize_condensed_images(synthetic_images_tensor_mhist, num_classes_mhist, images_per_class_mhist, 
                            title="Condensed Images for MHIST", save_folder=save_folder)
 
-
-# # Part 1 Question 2(d):
-# Repeat parts 2b and 2c while the condensed images are initialized with Gaussian noise. Discuss in full detail the qualitative and quantitative results you have achieved. Are the results and visualizations are comparable with parts 2b and 2c?
-
+"""
+Part 1 Question 2(d):
+Repeat parts 2b and 2c while the condensed images are initialized with Gaussian noise. Discuss in full detail the qualitative and quantitative results you have achieved. Are the results and visualizations are comparable with parts 2b and 2c?
+"""
 # # Repeat parts 2(b) while the condensed images are initialized with Gaussian noise
 
 # In[ ]:
@@ -527,9 +531,9 @@ print("Training on MHIST dataset with Gaussian noise...")
 train_with_attention_matching(convnet7, synthetic_loader_mhist_noise, optimizer_mhist_noise, 
                               F.cross_entropy, param=0, exp=4, num_epochs=T_mhist, lambda_param=lambda_mhist)
 
-# Evaluate ConvNet7 on the test set
-accuracy_attention_mhist_noise = evaluate_model(convnet7, mhist_test_loader)
-print(f'ConvNet7 Test Accuracy on MHIST: {accuracy_attention_mhist_noise:.2f}%')
+# # Evaluate ConvNet7 on the test set
+# accuracy_attention_mhist_noise = evaluate_model(convnet7, mhist_test_loader)
+# print(f'ConvNet7 Test Accuracy on MHIST: {accuracy_attention_mhist_noise:.2f}%')
 
 
 # # Repeat parts 2(c) while the condensed images are initialized with Gaussian noise
@@ -561,10 +565,11 @@ def visualize_condensed_images(synthetic_images_tensor, num_classes, images_per_
 visualize_condensed_images(synthetic_images_tensor_mhist_noise, num_classes_mhist, images_per_class_mhist, 
                            save_dir="Save_images", title="Condensed Images for MHIST with Gaussian Noise")
 
-
-# # Part 1 Question 2(e):
-# Now that you have had a chance to understand, learn, and visualize the condensed dataset, we can train the selected network from scratch on the condensed images. Train the selected network on a learned synthetic dataset (with 100 training images), then evaluate it on the
-# real testing data. Compare the test accuracy performance and the training time with part 2a. Explain your results. (For a fair comparison, you should use the exact same experimental setting as part 2a)
+"""
+Part 1 Question 2(e):
+Now that you have had a chance to understand, learn, and visualize the condensed dataset, we can train the selected network from scratch on the condensed images. Train the selected network on a learned synthetic dataset (with 100 training images), then evaluate it on the
+real testing data. Compare the test accuracy performance and the training time with part 2a. Explain your results. (For a fair comparison, you should use the exact same experimental setting as part 2a)
+"""
 
 # In[ ]:
 
@@ -609,14 +614,14 @@ print(f'ConvNet7 Test Accuracy on Real MHIST after training on condensed dataset
 
 
 # Input tensor for calculating FLOPs
-input_tensor_mhist = torch.randn(200, channel_mhist, 224, 224)
+input_tensor_mhist = torch.randn(100, channel_mhist, 224, 224)
 flops_mhist = calculate_flops(convnet7, input_tensor_mhist)
 print(f'FLOPs for ConvNet7: {flops_mhist:.2f} FLOPs')
 
-
-# # Part 1 Question 3: Cross-architecture Generalization
-# The ResNet18 is used in this section from Resnet18_mhist.py file to evaluate its cross-architecture performance in terms of classification accuracy
-# on the test sets.
+"""
+Part 1 Question 3: Cross-architecture Generalization
+The ResNet18 is used in this section from Resnet18_mhist.py file to evaluate its cross-architecture performance in terms of classification accuracy on the test sets.
+"""
 
 # In[ ]:
 
@@ -658,303 +663,10 @@ mhist_test_loader = DataLoader(mhist_test, batch_size=batch_size_mhist, shuffle=
 mhist_accuracy = evaluate_model(resnet18, mhist_test_loader)
 print(f'ResNet18 Test Accuracy on Real MHIST: {mhist_accuracy:.2f}%')
 
+"""
+          ############################# Code ends here for MHIST Dataset  ####################################
 
-# # Part 1 Question 4: Apply your synthetic small datasets to one of the machine learning applications
-# Apply synthetic small dataset to continual leaning. So this case we have to train a model and evaluate the trained model.
-# code is constructed by refering from: https://www.kaggle.com/code/dlarionov/continual-learning-on-permuted-mnist
-
-#  *As of the refered code they have applied the code to premuted MHIST (original MHIST) dataset, 
-# So as of the task II, i did not consider the premutation, instead I applied the train and test dataset to the model. 
-# For this I used the Convnet3 model as I have used this to train the systhetic dataset earlier.*
-
-# # Part II as of the experiment set up for continual learning in paper: 
-# DATASET CONDENSATION WITH GRADIENT MATCHING
-
-# In[ ]:
-
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
-import torch
-import torch.nn as nn
-import torchvision.datasets as datasets
-import torchvision.transforms as T
-import torch.nn.functional as F
-import torch.optim as optim
-import random
-from torch.utils.data import Subset
-from torch.utils.data import TensorDataset
-
-
-# In[ ]:
-
-
-# Set seeds for reproducibility
-seed = 0
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-
-# Device and hyperparameters
-# device = torch.device("cpu")
-train_bs = 64 # Training batch size
-test_bs = 2000  # Testing batch size
-lr = 0.01  # Learning rate
-gamma = 0.9  # Decay factor
-num_tasks = 3  # Number of tasks 
-
-
-# In[ ]:
-
-
-# To create growing test sets at different stages: 2,000, 4,000, and 6,000 images
-def get_test_subset(dataset, size):
-    size = min(size, len(dataset)) 
-    indices = np.random.choice(len(dataset), size, replace=False)
-    subset = Subset(dataset, indices)
-    return DataLoader(subset, batch_size=batch_size_mhist, shuffle=False)
-
-
-# In[ ]:
-
-
-num_images = 100  
-num_classes_mhist = 2  
-image_size = 224 * 224  
-channels = 3    
-height = 224      
-width = 224       
-
-# Resize MHIST images 
-transform_resize = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize to 224x224
-    transforms.Grayscale(num_output_channels=3),  # Ensure 3 channels (RGB)
-    transforms.ToTensor()  # Convert to tensor
-])
-synthetic_images_tensor_mhist = torch.rand(num_images, channels, height, width) 
-
-
-# In[ ]:
-
-
-# Define Replay Buffer
-class ReplayBuffer:
-    def __init__(self, buffer_size=100):
-        self.buffer = []
-        self.buffer_size = buffer_size
-
-    def add_to_buffer(self, samples):
-        for sample in samples:
-            # Ensure each sample has the correct number of elements
-            if len(sample) == 2:
-                input_tensor, target_tensor = sample
-                # Reshape the target tensor to ensure it is a single element
-                target_tensor = target_tensor.view(-1)  # Flatten to ensure it is a 1D tensor
-                self.buffer.append((input_tensor, target_tensor))
-                
-                # Maintain buffer size
-                if self.buffer_size and len(self.buffer) > self.buffer_size:
-                    self.buffer.pop(0)  # Remove oldest sample if buffer exceeds size
-            else:
-                print(f"Unexpected sample shape: {sample}")
-
-    def sample_from_buffer(self, batch_size):
-        samples = random.sample(self.buffer, min(len(self.buffer), batch_size))
-
-        inputs = [sample[0] for sample in samples]
-        targets = [sample[1] for sample in samples]
-
-        inputs_tensor = torch.stack(inputs) if inputs else torch.empty(0)
-        targets_tensor = torch.stack(targets) if targets else torch.empty(0)
-
-        return list(zip(inputs_tensor, targets_tensor))
-
-
-# In[ ]:
-
-
-import torch.nn.functional as F
-# Train model with replay buffer
-def train_model_with_replay(model, device, synthetic_loader, replay_buffer, optimizer, criterion, scheduler, replay_ratio=0.3):
-    model.train()
-    synthetic_data_iter = iter(synthetic_loader)
-    total_steps = len(synthetic_loader)
-    
-    for step in range(total_steps):
-        # Get current batch from synthetic data
-        try:
-            synthetic_batch = next(synthetic_data_iter)
-        except StopIteration:
-            synthetic_data_iter = iter(synthetic_loader)
-            synthetic_batch = next(synthetic_data_iter)
-        
-        # Sample from replay buffer
-        replay_batch = replay_buffer.sample_from_buffer(int(replay_ratio * len(synthetic_batch[0])))
-
-        # Debugging shapes
-        print(f"Synthetic batch shape: {synthetic_batch[0].shape}")
-        print(f"Replay batch size: {len(replay_batch)}")
-
-        # Add synthetic data to replay buffer
-        synthetic_samples = list(zip(
-            synthetic_images_tensor_mhist.view(-1, 3, 224, 224),
-            synthetic_labels_tensor_mhist
-        ))
-        replay_buffer.add_to_buffer(synthetic_samples)  # Add synthetic data to the replay buffer
-
-        # Combine synthetic data with replay data
-        if replay_batch:
-            print("Replay batch shapes:")
-            for i, (input_tensor, target_tensor) in enumerate(replay_batch):
-                print(f"Replay input shape[{i}]: {input_tensor.shape}, Replay target shape[{i}]: {target_tensor.shape}")
-        
-            # Ensure replay input tensors have the correct shape
-            target_shape = (224, 224)  # Set target size for height and width
-            replay_inputs = []
-        
-            for x in replay_batch:
-                input_tensor = x[0]
-        
-                # Adjust the shape of the input tensor if necessary
-                if input_tensor.dim() == 3:  # If 3D (H, W, C), add a channel dimension
-                    input_tensor = input_tensor.unsqueeze(0)  # Convert to (1, H, W, C)
-        
-                # Resize to the target shape
-                input_tensor = F.interpolate(input_tensor, size=target_shape, mode='bilinear', align_corners=False)
-        
-                # Repeat the channels if needed
-                if input_tensor.shape[1] != 3:  # If channels are not 3
-                    input_tensor = input_tensor.repeat(1, 3, 1, 1)  # Repeat to match channel size
-                
-                replay_inputs.append(input_tensor)
-        
-            # Print shapes after adjustments
-            for i, input_tensor in enumerate(replay_inputs):
-                print(f"Adjusted replay input shape[{i}]: {input_tensor.shape}")
-        
-            # Check if synthetic_batch[0] needs to be adjusted
-            synthetic_input = synthetic_batch[0]
-            if synthetic_input.dim() == 3:  # If synthetic input is also 3D
-                synthetic_input = synthetic_input.unsqueeze(0)  # Convert to (1, H, W, C)
-        
-            # Resize synthetic input to the target shape
-            synthetic_input = F.interpolate(synthetic_input, size=target_shape, mode='bilinear', align_corners=False)
-        
-            # Now concatenate the inputs and targets
-            combined_inputs = torch.cat([synthetic_input] + replay_inputs, dim=0)  # Concatenate along the batch dimension
-            combined_targets = torch.cat([synthetic_batch[1]] + [x[1] for x in replay_batch], dim=0)
-        else:
-            combined_inputs, combined_targets = synthetic_batch
-        
-        # Move combined inputs and targets to the specified device
-        combined_inputs, combined_targets = combined_inputs.to(device), combined_targets.to(device)
-
-        # Forward pass
-        optimizer.zero_grad()
-        output = model(combined_inputs)
-        loss = criterion(output, combined_targets)
-        loss.backward()
-        optimizer.step()
-    
-    # Update learning rate
-    scheduler.step()
-
-
-# In[ ]:
-
-
-# Test function with growing test set
-def test1_with_growing_test_set(model, device, mhist_test):
-    # Define the sizes for the growing test sets
-    test_set_sizes = [2000, 4000, 6000]
-    metrics = []
-    replay_buffer = ReplayBuffer(buffer_size=8000)  # Replay buffer with a limit of 8000 samples
-    
-    # Evaluate untrained model on MHIST test subsets
-    for size in test_set_sizes:
-        test_loader = get_test_subset(mhist_test, size)
-        test_acc = evaluate_model(model, test_loader)
-        print(f"Test accuracy on {size} images: {test_acc:.2f}%")
-        metrics.append(test_acc)
-    
-    for i in range(num_tasks):
-        print(f'Train on Task {i + 1}')
-        synthetic_loader, synthetic_data = tasks[i]  # Unpack the task
-        optimizer = torch.optim.Adadelta(model.parameters(), lr=lr)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=gamma)
-        
-        # Train the model on the current task using memory replay
-        train_model_with_replay(model, device, synthetic_loader, replay_buffer, optimizer, criterion, scheduler)
-        
-        # Add the synthetic data to the replay buffer
-        replay_buffer.add_to_buffer(synthetic_data.tensors)
-        
-        # Evaluate the model on different MHIST test set sizes
-        for size in test_set_sizes:
-            test_loader = get_test_subset(mhist_test, size)
-            test_acc = evaluate_model(model, test_loader)
-            print(f"Test accuracy after training on Task {i+1} with {size} test images: {test_acc:.2f}%")
-            metrics.append(test_acc)
-    
-    return metrics  
-
-
-# In[ ]:
-
-
-# Create synthetic labels
-synthetic_labels_tensor_mhist = torch.randint(0, num_classes_mhist, (num_images,)) 
-synthetic_images_tensor_mhist = torch.rand(num_images, 3, 224, 224) 
-
-# Create the synthetic dataset with the reshaped images
-synthetic_dataset_mhist = TensorDataset(synthetic_images_tensor_mhist, synthetic_labels_tensor_mhist)
-
-# Create tasks for different dataset sizes
-max_size = min(num_images, 2000 * num_tasks)  
-tasks = [
-    (DataLoader(TensorDataset(
-        synthetic_images_tensor_mhist[:2000 * (i + 1)], 
-        synthetic_labels_tensor_mhist[:2000 * (i + 1)]
-    ), batch_size=64, shuffle=True), 
-    TensorDataset(
-        synthetic_images_tensor_mhist[:2000 * (i + 1)], 
-        synthetic_labels_tensor_mhist[:2000 * (i + 1)]
-    ))
-    for i in range(num_tasks)
-]
-# print("Synthetic images shape:", synthetic_images_tensor_mhist.shape)
-# print("Synthetic labels shape:", synthetic_labels_tensor_mhist.shape)
-
-
-# In[ ]:
-
-
-# Experimenting multiple times (this case: 5 runs), compute the mean and standard deviation, and report them
-all_experiments = []
-num_experiments = 5
-convnet7 = get_network('ConvNetD7', channel_mhist, num_classes_mhist, im_size_mhist).to('cpu')
-for experiment in range(num_experiments):
-    print(f"Running Experiment {experiment + 1}")
-    model = convnet7.to(device)  # Reset the model for each experiment
-    degr_profile = test1_with_growing_test_set(model, device, mhist_test)
-    all_experiments.append(degr_profile)
-
-# Convert results to numpy array for easy computation of mean and std
-all_experiments = np.array(all_experiments)
-
-mean_results = np.mean(all_experiments, axis=0)
-std_results = np.std(all_experiments, axis=0)
-
-# Print mean and std for each task
-for i, (mean, std) in enumerate(zip(mean_results, std_results)):
-    print(f"Task {i + 1} - Mean accuracy: {mean:.4f}, Standard deviation: {std:.4f}")
-
-
-#           ############################# Code ends here for MHIST Dataset  ####################################
-
-# In[ ]:
+"""
 
 
 

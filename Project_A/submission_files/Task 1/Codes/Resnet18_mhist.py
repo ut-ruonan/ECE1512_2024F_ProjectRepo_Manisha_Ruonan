@@ -1,3 +1,23 @@
+"""
+Header for ResNet18_mhist.py
+--------------------------------------
+
+This module defines a custom implementation of the ResNet model with adjustable normalization options and flexible layer configuration.
+
+- Choice of normalization: 'instancenorm' (default) or 'batchnorm'.
+- Customizable depth through the ResNet function parameters.
+- Compatibility for different input channels and class sizes for classification tasks.
+
+Usage Note:
+This model is exclusively used within the MHIST_Task1_main code.
+
+Requirements:
+- PyTorch (torch, torch.nn)
+- torch.nn.functional for activation functions and pooling
+
+"""
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

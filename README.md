@@ -9,7 +9,7 @@ This repository contains the implementation for "Dataset Distillation for Data-E
 
 - **Task 2:** Implements Prioritize Alignment Distillation (PAD) and Distribution Matching (DM), state-of-the-art techniques designed to optimize feature alignment and distribution representation in synthetic data, enhancing generalization across different architectures.
 
-Each task includes relevant code, synthetic datasets, and evaluation scripts.
+Each task includes relevant code, synthetic datasets, images, and evaluation scripts.
 
 ## Methodology
 - **Attention Matching:** Aligns synthetic datasets with attention maps of real data to capture essential features in a data-efficient manner.
@@ -18,7 +18,7 @@ Each task includes relevant code, synthetic datasets, and evaluation scripts.
 
 ## Key Contributions
 
-1. **Efficient Training**: The synthetic datasets created with Attention Matching,PAD, and DM allow training with significantly fewer data points.
+1. **Efficient Training**: The synthetic datasets created with Attention Matching, PAD, and DM allow training with significantly fewer data points.
 2. **Cross-Architecture Generalization**: Synthetic datasets are evaluated on different architectures, showcasing their ability to generalize across ConvNet and ResNet models.
 3. **Noise Robustness**: Experiments include synthetic datasets with Gaussian noise to analyze model resilience.
 
