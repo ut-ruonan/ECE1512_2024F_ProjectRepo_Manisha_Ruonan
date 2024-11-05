@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains the implementation for "Dataset Distillation for Data-Efficient Learning," created as part of the ECE1512H project by M.G. Manisha Milani and Ruonan Niu. The project investigates dataset distillation techniques, particularly Attention Matching, Prioritize Alignment Distillation (PAD) and Distribution Matching (DM) methods to develop synthetic datasets that replicate the characteristics of MNIST and MHIST datasets, providing a solution for training models with reduced data while maintaining accuracy.
+This repository contains the implementation for "Dataset Distillation for Data-Efficient Learning," created as part of the ECE1512H project by Manisha Mahagammulle Gamage and Ruonan Niu. The project investigates dataset distillation techniques, particularly Attention Matching, Prioritize Alignment Distillation (PAD) and Distribution Matching (DM) methods to develop synthetic datasets that replicate the characteristics of MNIST and MHIST datasets, providing a solution for training models with reduced data while maintaining accuracy.
 
 ## Project Structure
 - **Task 1:** Focuses on dataset distillation using Attention Matching for MNIST and MHIST datasets, evaluating the performance of models trained on these synthetic datasets.
